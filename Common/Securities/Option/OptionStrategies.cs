@@ -562,5 +562,58 @@ namespace QuantConnect.Securities.Option
                 }
             };
         }
+
+
+        /// <summary>
+        /// Method creates new Call Back Spread strategy, that consists of two long calls at an upper strike, and one short call at a lower strike.
+        /// The upper and lower strikes must both be with the same expiration.
+        /// </summary>
+        /// <param name="canonicalOption">Option symbol</param>
+        /// <param name="leg1Strike">The lower strike price of the short call</param>
+        /// <param name="leg2Strike">The upper strike price of the two long calls</param>
+        /// <param name="expiration">Option expiration date</param>
+        /// <returns>Option strategy specification</returns>
+        public static OptionStrategy CallBackSpread(
+            Symbol canonicalOption,
+            decimal leg1Strike,
+            decimal leg2Strike,
+            DateTime expiration
+            )
+        {
+            if (!canonicalOption.HasUnderlying ||
+                canonicalOption.ID.StrikePrice != 0.0m)
+            {
+                throw new ArgumentException("CallBackSpread: canonicalOption must contain canonical option symbol", nameof(canonicalOption));
+            }
+
+            if (leg1Strike < leg2Strike)
+            {
+                throw new ArgumentException("CallBackSpread: strikes need to be different with a lower strike", "leg1Strike, leg2Strike");
+            }
+
+            if (expiration == DateTime.MaxValue ||
+                expiration == DateTime.MinValue)
+            {
+                throw new ArgumentException("CallBackSpread: expiration must contain expiration date", nameof(expiration));
+            }
+
+            return new OptionStrategy
+            {
+                Name = OptionStrategyDefinitions.CallBackSpread.Name,
+                Underlying = canonicalOption.Underlying,
+                CanonicalOption = canonicalOption,
+                OptionLegs = new List<OptionStrategy.OptionLegData>
+                {
+                    new OptionStrategy.OptionLegData
+                    {
+                        Right = OptionRight.Call, Strike = leg1Strike, Quantity = -1, Expiration = expiration
+                    },
+                    new OptionStrategy.OptionLegData
+                    {
+                        Right = OptionRight.Call, Strike = leg2Strike, Quantity = 2, Expiration = expiration
+                    }
+                }
+            };
+        }
     }
 }

@@ -244,5 +244,16 @@ namespace QuantConnect.Securities.Option.StrategyMatcher
                 OptionStrategyDefinition.CallLeg(1, (legs, p) => p.Strike > legs[2].Strike,
                     (legs, p) => p.Expiration == legs[0].Expiration)
             );
+
+        /// <summary>
+        /// Call Back Spread strategy is a short one call option and long two call options with the same strike and both having the same
+        /// expiration.
+        /// </summary>
+        public static OptionStrategyDefinition CallBackSpread { get; }
+            = OptionStrategyDefinition.Create("Call Back Spread",
+                OptionStrategyDefinition.CallLeg(-1),
+                OptionStrategyDefinition.CallLeg(+2, (legs, p) => p.Strike >= legs[0].Strike,
+                    (legs, p) => p.Expiration == legs[0].Expiration)
+            );
     }
 }

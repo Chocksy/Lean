@@ -143,6 +143,11 @@ namespace QuantConnect.Securities.Option
                 var result = GetShortPutLongPutStrikeDifferenceMargin(parameters.PositionGroup, parameters.Portfolio);
                 return new MaintenanceMargin(result);
             }
+            else if (_optionStrategy.Name == OptionStrategyDefinitions.CallBackSpread.Name)
+            {
+                var result = GetCallBackRatioSpreadMargin(parameters.PositionGroup, parameters.Portfolio);
+                return new MaintenanceMargin(result);
+            }
 
             throw new NotImplementedException($"Option strategy {_optionStrategy.Name} margin modeling has yet to be implemented");
         }
@@ -217,6 +222,11 @@ namespace QuantConnect.Securities.Option
             else if (_optionStrategy.Name == OptionStrategyDefinitions.IronCondor.Name)
             {
                 var result = GetShortPutLongPutStrikeDifferenceMargin(parameters.PositionGroup, parameters.Portfolio);
+                return new InitialMargin(result);
+            }
+            else if (_optionStrategy.Name == OptionStrategyDefinitions.CallBackSpread.Name)
+            {
+                var result = GetCallBackRatioSpreadMargin(parameters.PositionGroup, parameters.Portfolio);
                 return new InitialMargin(result);
             }
 
@@ -299,6 +309,23 @@ namespace QuantConnect.Securities.Option
 
             // convert into account currency
             return portfolio.CashBook.ConvertToAccountCurrency(strikeDifference, optionSecurity.QuoteCurrency.Symbol);
+        }
+
+        private static decimal GetCallBackRatioSpreadMargin(IPositionGroup positionGroup, SecurityPortfolioManager portfolio)
+        {
+            var longOption = positionGroup.Positions.Where(position => position.Symbol.ID.OptionRight == OptionRight.Call && position.Quantity > 0).ToList();
+            var shortOption = positionGroup.Positions.Single(position => position.Symbol.ID.OptionRight == OptionRight.Call && position.Quantity < 0);
+            var optionSecurity = (Option)portfolio.Securities[longOption[0].Symbol];
+
+            var shortStrike = shortOption.Symbol.ID.StrikePrice;
+            var longStrike1 = longOption[0].Symbol.ID.StrikePrice;
+            var longStrike2 = longOption[1].Symbol.ID.StrikePrice;
+
+            var maxLoss = shortStrike - longStrike1;
+            var result = maxLoss * optionSecurity.ContractUnitOfTrade * Math.Abs(positionGroup.Quantity);
+
+            // convert into account currency
+            return portfolio.CashBook.ConvertToAccountCurrency(result, optionSecurity.QuoteCurrency.Symbol);
         }
     }
 }
