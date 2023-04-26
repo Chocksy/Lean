@@ -214,7 +214,10 @@ namespace QuantConnect.Tests.Common.Securities.Options.StrategyMatcher
                     TestCase.ExactPosition(PutCalendarSpread,  Position( Put[100, 1], +1), Position( Put[100, 0], -1)),
                     TestCase.ExactPosition(PutCalendarSpread,  Position( Put[100, 0], -1), Position( Put[100, 1], +1)),
 
-                    TestCase.ExactPosition(IronCondor,  Position( Put[100, 0], +1), Position(Put[105, 0], -1), Position(Call[110, 0], -1), Position(Call[120, 0], +1))
+                    TestCase.ExactPosition(IronCondor,  Position( Put[100, 0], +1), Position(Put[105, 0], -1), Position(Call[110, 0], -1), Position(Call[120, 0], +1)),
+
+                    TestCase.ExactPosition(CallBackSpread, Position(Call[110], -1), Position(Call[120], +2)),
+                    TestCase.ExactPosition(PutBackSpread, Position(Put[110], -1), Position(Put[120], +2)),
 
                 }.Select(x => new TestCaseData(x).SetName(x.Name)).ToArray();
             }

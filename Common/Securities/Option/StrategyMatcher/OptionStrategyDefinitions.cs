@@ -255,5 +255,16 @@ namespace QuantConnect.Securities.Option.StrategyMatcher
                 OptionStrategyDefinition.CallLeg(+2, (legs, p) => p.Strike >= legs[0].Strike,
                     (legs, p) => p.Expiration == legs[0].Expiration)
             );
+
+        /// <summary>
+        /// Put Back Spread strategy is a short one put option and long two put options with the same strike and both having the same
+        /// expiration.
+        /// </summary>
+        public static OptionStrategyDefinition PutBackSpread { get; }
+            = OptionStrategyDefinition.Create("Put Back Spread",
+                OptionStrategyDefinition.PutLeg(-1),
+                OptionStrategyDefinition.PutLeg(+2, (legs, p) => p.Strike >= legs[0].Strike,
+                    (legs, p) => p.Expiration == legs[0].Expiration)
+            );
     }
 }
